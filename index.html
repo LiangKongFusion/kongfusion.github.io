@@ -1,0 +1,474 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>“外瘦内胖”风险互动指南</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Harmony Neutrals -->
+    <!-- Application Structure Plan: The application is designed as a guided journey. It starts with a compelling hook ("Your scale is lying"), educates on the core problem (visceral vs. subcutaneous fat), explains the causes (the three pushers), provides a personalized interactive assessment tool (the dashboard), and concludes with a clear, actionable solution (the four pillars). This structure transforms passive reading into an active, engaging experience, moving the user from awareness to empowerment. It prioritizes user understanding and action over simply mirroring the report's linear layout. -->
+    <!-- Visualization & Content Choices: 
+        - Report Info: Visceral vs. Subcutaneous Fat -> Goal: Compare -> Viz: Side-by-side HTML/CSS diagrams -> Interaction: Hover for details -> Justification: Immediate visual differentiation.
+        - Report Info: Disease Risks -> Goal: Inform -> Viz: Chart.js Bar Chart -> Interaction: Tooltips on hover -> Justification: Clear comparison of risk factors.
+        - Report Info: The Three Pushers -> Goal: Organize/Explain -> Viz: Tabbed interface with icons (HTML/CSS/JS) -> Interaction: Click to reveal -> Justification: Breaks down complex information into digestible parts.
+        - Report Info: Self-Assessment -> Goal: Engage/Personalize -> Viz: HTML form + Chart.js Donut Chart -> Interaction: User inputs data, gets instant personalized feedback -> Justification: The core utility, makes the information personally relevant.
+        - Report Info: Four Pillars Plan -> Goal: Organize/Prescribe -> Viz: Tabbed interface with styled cards/tables -> Interaction: Click to switch topics -> Justification: Intuitive UI for categorized solutions.
+        - Library/Method: Chart.js (Canvas) for all charts. HTML/CSS/Tailwind for diagrams and icons.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans SC', sans-serif;
+            background-color: #F8F7F4;
+            color: #3D405B;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .tab-active {
+            background-color: #81B29A;
+            color: #FFFFFF;
+            font-weight: 500;
+        }
+        .tab-inactive {
+            background-color: #E8E8E8;
+            color: #3D405B;
+        }
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3D405B;
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .section-subtitle {
+            font-size: 1.125rem;
+            text-align: center;
+            max-width: 48rem;
+            margin: 0 auto 3rem;
+            color: #5a5e80;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1);
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="text-2xl font-bold text-[#3D405B]">
+                <span class="text-[#81B29A]">●</span> 内在健康指南
+            </div>
+            <div class="hidden md:flex space-x-6">
+                <a href="#problem" class="text-gray-600 hover:text-[#81B29A] transition">发现问题</a>
+                <a href="#assessment" class="text-gray-600 hover:text-[#81B29A] transition">自我评估</a>
+                <a href="#solution" class="text-gray-600 hover:text-[#81B29A] transition">行动计划</a>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section id="hero" class="py-20 md:py-32 bg-white">
+            <div class="container mx-auto px-6 text-center">
+                <h1 class="text-4xl md:text-6xl font-extrabold text-[#3D405B] leading-tight mb-4">你的体重秤，在撒谎。</h1>
+                <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-8">体重正常，甚至偏瘦，就真的健康吗？揭示“外瘦内胖”（TOFI）的隐形危险，夺回你真正的健康主导权。</p>
+                <a href="#problem" class="bg-[#81B29A] text-white font-bold py-3 px-8 rounded-full hover:bg-[#6a9a7e] transition-transform transform hover:scale-105 inline-block">
+                    了解隐藏的真相
+                </a>
+            </div>
+        </section>
+
+        <section id="problem" class="py-16 md:py-24">
+            <div class="container mx-auto px-6">
+                <h2 class="section-title">两种脂肪：保护垫 vs. 隐藏的刺客</h2>
+                <p class="section-subtitle">问题的核心，在于你的脂肪藏在哪里，而不是有多少。身体里的脂肪分为两种，它们的性质天差地别。了解它们的区别，是重塑健康的第一步。</p>
+                <div class="grid md:grid-cols-2 gap-8 items-center">
+                    <div class="card text-center p-8">
+                        <div class="text-6xl mb-4">😊</div>
+                        <h3 class="text-2xl font-bold mb-2 text-[#3D405B]">皮下脂肪 (Subcutaneous)</h3>
+                        <p class="text-gray-600">位于皮肤之下，就是你可以在腰间、大腿捏起来的“软肉”。它主要作为能量储备和缓冲垫，相对而言是“无辜”的。</p>
+                    </div>
+                    <div class="card text-center p-8 border-2 border-[#E07A5F]">
+                        <div class="text-6xl mb-4">👿</div>
+                        <h3 class="text-2xl font-bold mb-2 text-[#E07A5F]">内脏脂肪 (Visceral)</h3>
+                        <p class="text-gray-600">深藏于腹腔，包裹着你的肝脏、肠道等核心器官。它是一个活跃的“内分泌器官”，会持续释放有害物质，引发全身性炎症，是多种重大疾病的幕后黑手。</p>
+                    </div>
+                </div>
+
+                <div class="mt-16">
+                    <h3 class="text-2xl font-bold text-center mb-2">内脏脂肪：一个活跃的“麻烦制造者”</h3>
+                    <p class="text-center text-gray-600 max-w-3xl mx-auto mb-8">这个“隐藏的刺客”不仅占地方，还会主动攻击你的健康系统，其危害已被大量科学研究证实。</p>
+                    <div class="card">
+                        <div class="chart-container">
+                            <canvas id="diseaseRiskChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="causes" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-6">
+                <h2 class="section-title">三大隐形推手：谁在悄悄“喂养”内脏脂肪？</h2>
+                <p class="section-subtitle">内脏脂肪的堆积，往往不是意志力问题，而是身体对现代生活方式的生物学反应。三个强大的“激素破坏者”在幕后操纵着一切。</p>
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="card text-center">
+                        <div class="text-5xl mb-4">🍭</div>
+                        <h3 class="text-xl font-bold mb-2">糖-胰岛素螺旋</h3>
+                        <p>精制碳水和糖分让血糖飙升，迫使身体分泌大量胰岛素。而胰岛素正是“脂肪储存激素”，它会命令身体：“别烧了，快存起来！”</p>
+                    </div>
+                    <div class="card text-center">
+                        <div class="text-5xl mb-4">🤯</div>
+                        <h3 class="text-xl font-bold mb-2">压力-皮质醇连接</h3>
+                        <p>长期压力让“压力荷尔蒙”皮质醇居高不下。皮质醇最喜欢的储能地点就是腹腔，同时它还会让你更渴望高糖高脂的“安慰食物”。</p>
+                    </div>
+                    <div class="card text-center">
+                        <div class="text-5xl mb-4">😴</div>
+                        <h3 class="text-xl font-bold mb-2">睡眠剥夺效应</h3>
+                        <p>睡眠不足会让“饥饿素”飙升，“瘦素”下降，让你第二天疯狂渴望垃圾食品。更可怕的是，身体会优先将这些多余能量存为内脏脂肪。</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="assessment" class="py-16 md:py-24">
+            <div class="container mx-auto px-6">
+                <h2 class="section-title">家庭健康侦探工具箱</h2>
+                <p class="section-subtitle">是时候抛弃不靠谱的BMI了。用下面这个简单、免费的工具，立即评估你真实的健康风险。你只需要一把卷尺和几秒钟时间。</p>
+                <div class="card max-w-4xl mx-auto">
+                    <div class="grid md:grid-cols-2 gap-8 items-center">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-4">风险评估计算器</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="gender" class="font-medium text-gray-700">性别</label>
+                                    <select id="gender" class="w-full mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#81B29A] focus:border-[#81B29A]">
+                                        <option value="male">男性</option>
+                                        <option value="female">女性</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="height" class="font-medium text-gray-700">身高 (厘米)</label>
+                                    <input type="number" id="height" class="w-full mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#81B29A] focus:border-[#81B29A]" placeholder="例如：175">
+                                </div>
+                                <div>
+                                    <label for="waist" class="font-medium text-gray-700">腰围 (厘米，肚脐水平)</label>
+                                    <input type="number" id="waist" class="w-full mt-1 p-2 border border-gray-300 rounded-md shadow-sm focus:ring-[#81B29A] focus:border-[#81B29A]" placeholder="例如：88">
+                                </div>
+                                <button id="calculateBtn" class="w-full bg-[#81B29A] text-white font-bold py-3 px-6 rounded-lg hover:bg-[#6a9a7e] transition">
+                                    开始评估
+                                </button>
+                            </div>
+                        </div>
+                        <div id="result" class="text-center">
+                            <p class="text-gray-500">输入您的数据，查看个性化评估结果。</p>
+                            <div class="chart-container hidden" id="resultChartContainer">
+                                <canvas id="whtrChart"></canvas>
+                                <div id="whtrValue" class="absolute inset-0 flex items-center justify-center text-4xl font-bold"></div>
+                            </div>
+                            <div id="resultText" class="mt-4 font-medium text-lg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="solution" class="py-16 md:py-24 bg-white">
+            <div class="container mx-auto px-6">
+                <h2 class="section-title">四大支柱计划：根除内脏脂肪的终极指南</h2>
+                <p class="section-subtitle">这不是一个严苛的节食方案，而是一系列旨在重新平衡激素、将身体从“脂肪储存模式”切换到“脂肪燃烧模式”的战略性生活方式升级。</p>
+                
+                <div class="max-w-5xl mx-auto">
+                    <div class="flex justify-center mb-8 rounded-lg p-1 bg-gray-200">
+                        <button class="tab-btn flex-1 py-2 px-4 rounded-md transition tab-active" data-tab="nutrition">🥗 营养策略</button>
+                        <button class="tab-btn flex-1 py-2 px-4 rounded-md transition tab-inactive" data-tab="exercise">💪 运动策略</button>
+                        <button class="tab-btn flex-1 py-2 px-4 rounded-md transition tab-inactive" data-tab="recovery">🧘 恢复策略</button>
+                    </div>
+
+                    <div id="nutrition" class="tab-content card">
+                        <h3 class="text-xl font-bold mb-4">滋养身体，饿死脂肪</h3>
+                        <p class="mb-6">核心是主动增加“抗脂肪”食物，而不是被动地剥夺所有食物。试试这个简单的“食物替换法”：</p>
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="p-3 font-semibold text-sm">抛弃这些...</th>
+                                    <th class="p-3 font-semibold text-sm">选择这些...</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b">
+                                    <td class="p-3">白米饭、白面包、面条</td>
+                                    <td class="p-3 font-medium text-[#81B29A]">糙米、藜麦、燕麦、红薯</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3">含糖饮料、果汁</td>
+                                    <td class="p-3 font-medium text-[#81B29A]">水、无糖绿茶、黑咖啡</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3">饼干、薯片、加工零食</td>
+                                    <td class="p-3 font-medium text-[#81B29A]">一小把坚果、苹果、水煮蛋</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3">高脂加工肉类（香肠、培根）</td>
+                                    <td class="p-3 font-medium text-[#81B29A]">去皮鸡胸肉、三文鱼、豆腐</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="exercise" class="tab-content card hidden">
+                         <h3 class="text-xl font-bold mb-4">有目的性地运动</h3>
+                         <p class="mb-6">忘记“局部减脂”的神话。运动的目标是创造一个全身性的、有利于燃脂的激素环境。最佳策略是“组合拳”：</p>
+                         <div class="grid md:grid-cols-3 gap-6 text-center">
+                            <div class="p-4 border rounded-lg">
+                                <h4 class="font-bold">有氧运动</h4>
+                                <p class="text-sm text-gray-600">每周150分钟快走、慢跑、骑行等，改善心血管健康。</p>
+                            </div>
+                            <div class="p-4 border-2 border-[#81B29A] rounded-lg">
+                                <h4 class="font-bold">力量训练 (秘密武器)</h4>
+                                <p class="text-sm text-gray-600">每周2-3次深蹲、俯卧撑等。增加肌肉，提高全天候燃脂效率。</p>
+                            </div>
+                            <div class="p-4 border rounded-lg">
+                                <h4 class="font-bold">HIIT (时间节约者)</h4>
+                                <p class="text-sm text-gray-600">15-20分钟高强度间歇训练，高效减少内脏脂肪。</p>
+                            </div>
+                         </div>
+                    </div>
+
+                    <div id="recovery" class="tab-content card hidden">
+                        <h3 class="text-xl font-bold mb-4">掌控你的恢复</h3>
+                        <p class="mb-6">这是从根源上对抗“激素破坏者”的地方。睡眠和压力管理与饮食、运动同等重要。</p>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <h4 class="font-semibold mb-2">🌙 可行的睡眠方案</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>目标：每晚7-8小时优质睡眠。</li>
+                                    <li>打造凉爽、黑暗、安静的卧室。</li>
+                                    <li>睡前1小时远离手机屏幕。</li>
+                                    <li>建立固定的作息时间。</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-2">😌 可行的压力管理</h4>
+                                 <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>每天5-10分钟“减压仪式”。</li>
+                                    <li>不带手机的户外散步。</li>
+                                    <li>听一首最爱的歌曲。</li>
+                                    <li>进行几次深呼吸或冥想。</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-[#3D405B] text-white">
+        <div class="container mx-auto px-6 py-8 text-center">
+            <h3 class="text-2xl font-bold mb-2">你，远不止是一个数字。</h3>
+            <p class="max-w-2xl mx-auto mb-4">真正的健康，是减少隐藏的风险，建立一个强壮、有弹性的身体。旅程始于今天，始于一个微小的改变。</p>
+            <p class="text-sm text-gray-400">&copy; 2025 内在健康指南。信息仅供参考，不能替代专业医疗建议。</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const diseaseRiskChartCtx = document.getElementById('diseaseRiskChart').getContext('2d');
+            new Chart(diseaseRiskChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['2型糖尿病', '心脏病', '脂肪肝', '某些癌症'],
+                    datasets: [{
+                        label: '风险增加',
+                        data: [85, 60, 75, 50],
+                        backgroundColor: [
+                            'rgba(224, 122, 95, 0.6)',
+                            'rgba(224, 122, 95, 0.6)',
+                            'rgba(224, 122, 95, 0.6)',
+                            'rgba(224, 122, 95, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(224, 122, 95, 1)',
+                            'rgba(224, 122, 95, 1)',
+                            'rgba(224, 122, 95, 1)',
+                            'rgba(224, 122, 95, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '内脏脂肪超标显著增加的主要疾病风险',
+                            font: { size: 16, family: 'Noto Sans SC' },
+                            color: '#3D405B',
+                            padding: { top: 10, bottom: 20 }
+                        },
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` 风险显著增加`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '相对风险水平'
+                            }
+                        }
+                    }
+                }
+            });
+
+            const calculateBtn = document.getElementById('calculateBtn');
+            const resultDiv = document.getElementById('result');
+            const resultChartContainer = document.getElementById('resultChartContainer');
+            const resultText = document.getElementById('resultText');
+            const whtrValue = document.getElementById('whtrValue');
+            let whtrChartInstance = null;
+            
+            calculateBtn.addEventListener('click', () => {
+                const gender = document.getElementById('gender').value;
+                const height = parseFloat(document.getElementById('height').value);
+                const waist = parseFloat(document.getElementById('waist').value);
+
+                if (!height || !waist || height <= 0 || waist <= 0) {
+                    resultText.textContent = '请输入有效的身高和腰围数据。';
+                    resultText.className = 'mt-4 font-medium text-lg text-red-500';
+                    resultChartContainer.classList.add('hidden');
+                    return;
+                }
+
+                const whtr = waist / height;
+                const waistLimitMale = 90;
+                const waistLimitFemale = 85;
+
+                let riskLevel = '低风险';
+                let riskColor = '#81B29A';
+                let message = `恭喜！你的腰围身高比为 ${whtr.toFixed(2)}，处于健康范围。`;
+
+                const isWhtrHigh = whtr >= 0.5;
+                const isWaistHigh = (gender === 'male' && waist >= waistLimitMale) || (gender === 'female' && waist >= waistLimitFemale);
+
+                if (isWhtrHigh || isWaistHigh) {
+                    riskLevel = '高风险';
+                    riskColor = '#E07A5F';
+                    message = `注意！你的腰围身高比为 ${whtr.toFixed(2)}。`;
+                    if (isWhtrHigh) {
+                        message += ` 已超过0.5的警戒线。`;
+                    }
+                    if (isWaistHigh) {
+                         message += ` 您的腰围(${waist}cm)也超过了${gender === 'male' ? '男性(90cm)' : '女性(85cm)'}的推荐标准。`;
+                    }
+                    message += ' 这意味着内脏脂肪超标的风险很高，建议立即采取行动。';
+                }
+
+                resultText.textContent = message;
+                resultText.style.color = riskColor;
+                whtrValue.textContent = whtr.toFixed(2);
+                whtrValue.style.color = riskColor;
+
+                resultChartContainer.classList.remove('hidden');
+                resultDiv.querySelector('p').classList.add('hidden');
+
+                const chartData = {
+                    labels: ['当前占比', '安全余量'],
+                    datasets: [{
+                        data: [whtr, 1 - whtr > 0 ? 1-whtr : 0],
+                        backgroundColor: [riskColor, '#E8E8E8'],
+                        borderColor: '#FFFFFF',
+                        borderWidth: 4,
+                        circumference: 180,
+                        rotation: 270
+                    }]
+                };
+
+                if (whtrChartInstance) {
+                    whtrChartInstance.destroy();
+                }
+
+                whtrChartInstance = new Chart(document.getElementById('whtrChart').getContext('2d'), {
+                    type: 'doughnut',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '70%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false },
+                            title: {
+                                display: true,
+                                text: '腰围身高比 (WHtR) 仪表盘',
+                                font: { size: 14, family: 'Noto Sans SC' },
+                                color: '#3D405B',
+                                padding: { bottom: 15 }
+                            }
+                        }
+                    }
+                });
+            });
+            
+            const tabButtons = document.querySelectorAll('.tab-btn');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabId = button.dataset.tab;
+
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('tab-active');
+                        btn.classList.add('tab-inactive');
+                    });
+                    button.classList.add('tab-active');
+                    button.classList.remove('tab-inactive');
+
+                    tabContents.forEach(content => {
+                        if (content.id === tabId) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
